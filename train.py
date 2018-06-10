@@ -249,6 +249,7 @@ def main():
             'state_dict': model.state_dict(),
             'class_to_idx': model.class_to_idx,
             'hidden_units': hidden_units,
+            'num_labels': num_labels,
             'optimizer_dict': optimizer.state_dict(),
             'learning_rate': optimizer.state_dict()['param_groups'][0]['lr'], # = in_arg.lr * gamma**(num_epochs//step_size) 
             'epochs': num_epochs,
