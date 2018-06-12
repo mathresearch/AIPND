@@ -3,7 +3,8 @@
 #                                                                             
 # PROGRAMMER: Bernd Schomburg                                                     
 # DATE CREATED: 06/10/2018
-# DATE REVISED: 06/10/2018                                   
+# DATE REVISION 1: 06/10/2018
+# DATE REVISION 2: 06/12/2018
 
 import os, time, random, json, copy,  argparse
 from collections import OrderedDict
@@ -246,15 +247,16 @@ def main():
 
         checkpoint_dict = {
             'arch': arch,
+            'classifier' : classifier,
             'state_dict': model.state_dict(),
             'class_to_idx': model.class_to_idx,
             'hidden_units': hidden_units,
-            'num_labels': num_labels,
             'optimizer_dict': optimizer.state_dict(),
             'learning_rate': optimizer.state_dict()['param_groups'][0]['lr'], # = in_arg.lr * gamma**(num_epochs//step_size) 
             'epochs': num_epochs,
             'batch_size': batch_size
          }
+
         torch.save(checkpoint_dict, checkpoint)
     
 if __name__ == '__main__':

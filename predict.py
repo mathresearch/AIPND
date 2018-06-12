@@ -3,7 +3,8 @@
 #                                                                             
 # PROGRAMMER: Bernd Schomburg                                                     
 # DATE CREATED: 06/10/2018                                  
-# DATE REVISED: 06/10/2018       
+# DATE REVISION 1: 06/10/2018
+# DATE REVISION 2: 06/12/2018
 
 import os, time, json, copy, argparse
 from collections import OrderedDict
@@ -77,32 +78,22 @@ def load_checkpoint(filepath):
                                 loc: storage)      
     
     arch =  checkpoint['arch']
-    if arch =='resnet18':
-        model = models.resnet18(pretrained=True)
-        num_ftrs = model.fc.in_features
-    elif arch =='densenet121':
-        model = models.densenet121(pretrained=True)
-        num_ftrs = model.classifier.in_features    
-    else:
+    if arch != "resnet18" and arch != "densenet121":
         raise ValueError('Network architecture not supported', arch)
     
-    num_labels = checkpoint['num_labels']
-
-    hidden_units = checkpoint['hidden_units']
-
-    classifier = nn.Sequential(OrderedDict([
-                        ('fc1', nn.Linear(num_ftrs, hidden_units)),
-                        ('relu', nn.ReLU()),
-                        ('d_out', nn.Dropout(p=0.5)),
-                        ('fc2', nn.Linear(hidden_units, num_labels)),
-                        ('output', nn.LogSoftmax(dim=1))
-                        ]))
+    model=getattr(models, arch)(pretrained=True) 
+    
+    for param in model.parameters():
+        param.requires_grad = False
+ 
     if arch == "resnet18":
-        model.fc = classifier
-    elif arch == "densenet121":
-        model.classifier = classifier   
+        model.fc = checkpoint['classifier'] 
+    else: # arch == "densenet121"
+        model.classifier = checkpoint['classifier']
+    
     model.load_state_dict(checkpoint['state_dict'])
     model.class_to_idx = checkpoint['class_to_idx']
+    
     return model
 
 
@@ -128,7 +119,7 @@ def main():
         
     in_arg = get_input_args()
     
-    # Sets GPU if requestd and available    
+    # Sets GPU if requested and available    
     if in_arg.gpu and torch.cuda.is_available():
             print('Using GPU for prediction.')
             device = torch.device("cuda:0")
